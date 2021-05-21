@@ -133,6 +133,7 @@ def finish(individual):
                         rowSets[i].add(num)
                         columnSets[j].add(num)
                         subSquareSets[int(i / 3) * 2 + int(j / 3)].add(num)
+                        break
 
 
 def crossover(parent1, parent2, child1, child2):
@@ -168,8 +169,8 @@ def GA(newPopulationSize, eliteSize, maxIters, mutationProbability, tournamentSi
     for i in range(maxIters):
 
         population.sort()
-        # if i%500:
-        #     print(population[0].fitness)
+        if i%500:
+            print(population[0].fitness)
         if population[0].fitness == 0:
             print("Pronadjeno tokom {0:d}} iteracije!".format(i))
             duringIterations = True
@@ -197,22 +198,24 @@ def GA(newPopulationSize, eliteSize, maxIters, mutationProbability, tournamentSi
     print("Najblize resenje je:")
     for i in range(nDigits):
         print(population[0].board[i])
+        print(population[0].fitness)
 
 
-original = [[0, 0, 0, 0, 0, 1, 0, 9, 0],
-            [5, 0, 0, 0, 0, 0, 6, 0, 0],
-            [0, 0, 9, 3, 7, 0, 0, 0, 0],
-            [9, 0, 6, 0, 5, 0, 3, 0, 0],
-            [1, 0, 5, 9, 0, 0, 7, 0, 0],
-            [0, 2, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 2, 0, 1, 7],
-            [0, 0, 0, 0, 4, 0, 0, 0, 0],
-            [3, 0, 0, 1, 9, 6, 0, 2, 0]
-            ]
+original = [
+        [8,0,0,0,0,0,0,0,0],
+        [0,0,3,6,0,0,0,0,0],
+        [0,7,0,0,9,0,2,0,0],
+        [0,5,0,0,0,7,0,0,0],
+        [0,0,0,0,4,5,7,0,0],
+        [0,0,0,1,0,0,0,3,0],
+        [0,0,1,0,0,0,0,6,8],
+        [0,0,8,5,0,0,0,1,0],
+        [0,9,0,0,0,0,4,0,0]
+    ]
 originalD = {}
 for i in range(9):
     for j in range(9):
         if original[i][j] != 0:
             originalD[(i, j)] = original[i][j]
 
-GA(150, 50, 10000, 0.5, 10, originalD)
+GA(150, 50, 10000, 0.8, 10, originalD)
