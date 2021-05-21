@@ -3,35 +3,39 @@ import random
 import copy
 
 nDigits = 9
+
+
 def Check(a):
     s = len(set(a))
-    return (1.0/s)/nDigits, np.zeros(nDigits)
+    return (1.0 / s) / nDigits, np.zeros(nDigits)
 
-def initialize(individual):
+
+def initialize(original):
     m = original
     for i in range(nDigits):
         rowSet = set(original[i])
         for j in range(nDigits):
             if m[i][j] == 0:
-                val = random.randrange(1, 10)
+                val = (int(random.uniform(0,9)*10))%9
                 while val in rowSet:
                     val = random.randrange(1, 10)
                 m[i][j] = val
                 rowSet.add(val)
     return m
 
+
 class sudokuPuzzle:
-    def __init__(self):
-        self.board = initialize(self)
+    def __init__(self, original):
+        self.board = initialize(original)
         self.fitness = self.fitnessFunction()
 
     def __lt__(self, other):
         return self.fitness > other.fitness
 
     def fitnessFunction(self):
-        countRows = np.zeros(nDigits)
-        countColumns = np.zeros(nDigits)
-        countSubBoard = np.zeros(nDigits)
+        countRows = [0]*nDigits
+        countColumns = [0]*nDigits
+        countSubBoard = [0]*nDigits
         sumRow = 0
         sumColumn = 0
         sumSubBoard = 0
@@ -49,9 +53,9 @@ class sudokuPuzzle:
                         countSubBoard[self.board[i + x][j + y] - 1] += 1
 
                 sumSubBoard, countSubBoard = Check(countSubBoard)
-        
-        return 1.0*(sumColumn + sumSubBoard + sumRow) / 3
- 
+
+        return 1.0 * (sumColumn + sumSubBoard + sumRow) / 3
+
     def isRowFeasible(self, r, val):
         for j in range(0, nDigits):
             if self.board[r][j] == val:
@@ -65,8 +69,8 @@ class sudokuPuzzle:
         return True
 
     def isSubBoardFeasible(self, r, c, val):
-        iStart = (r/3)*3
-        jStart = (c/3)*3
+        iStart = (r / 3) * 3
+        jStart = (c / 3) * 3
         for i in range(iStart, iStart + 3):
             for j in range(jStart, jStart + 3):
                 if self.board[i][j] == val:
@@ -77,31 +81,46 @@ class sudokuPuzzle:
         if ind == 1:
             return self.isColumnFeasible(j1, self.board[i2][j2]) and self.isSubBoardFeasible(i1, j1, self.board[i2][j2])
         else:
-            return self.isRowFeasible(i1, self.board[i2][j2]) and self.isColumnFeasible(j1, self.board[i2][j2]) and self.isSubBoardFeasible(i1, j1, self.board[i2][j2])
+            return self.isRowFeasible(i1, self.board[i2][j2]) and self.isColumnFeasible(j1, self.board[i2][
+                j2]) and self.isSubBoardFeasible(i1, j1, self.board[i2][j2])
+
 
 def mutation(individual, mutationProbability):
     ind = random.uniform(0, 1)
     if ind > mutationProbability:
         return
     else:
-        r = random.randrange(0, 9)
-        isOk = False
-        while(isOk == False):
-            r = random.randint(0, 8)
-            c1 = random.randint(0, 8)
-            random.seed()
-            c2 = int(random.random()*10) % 9
-            while(c1 == c2):
-                print("KUKURIKU", c1, c2)
-                random.seed()
-                c1 = random.randint(0, 8)
-                c2 = random.randint(0, 8)
-
-            if original[r][c1] == 0 and original[r][c2] == 0 and individual.isFeasible(r, c1, r, c2, 1) and individual.isFeasible(r, c2, r, c1, 1):
-                break
-                tmp = individual.board[r][c1]
-                individual.board[r][c1] = individual.board[r][c2]
-                individual.board[r][c2] = tmp
+        #r = random.randrange(0, 9)
+        # isOk = False
+        # while (isOk == False):
+        #     r = random.randint(0, 8)
+        #     c1 = random.randint(0, 8)
+        #     random.seed()
+        #     c2 = int(random.random() * 10) % 9
+        #     while (c1 == c2):
+        #         print("KUKURIKU", c1, c2)
+        #         random.seed()
+        #         c1 = random.randint(0, 8)
+        #         c2 = random.randint(0, 8)
+        #
+        #     if original[r][c1] == 0 and original[r][c2] == 0 and individual.isFeasible(r, c1, r, c2,
+        #                                                                                1) and individual.isFeasible(r,
+        #                                                                                                             c2,
+        #                                                                                                             r,
+        #                                                                                                             c1,
+        #                                                                                                             1):
+        #         break
+        #         tmp = individual.board[r][c1]
+        #         individual.board[r][c1] = individual.board[r][c2]
+        #         individual.board[r][c2] = tmp
+        #
+        r1 = random.randrange(nDigits)
+        r2 = random.randrange(nDigits)
+        while r1 == r2:
+            r2 = random.randrange(nDigits)
+        tmp = individual.board[r1]
+        individual.board[r1] = individual.board[r2]
+        individual.board[r2] = tmp
 
 def selection(population, tournamentSize):
     bestFitness = float('inf')
@@ -112,22 +131,23 @@ def selection(population, tournamentSize):
         if population[j].fitness < bestFitness:
             bestCoord = j
             bestFitness = population[j].fitness
-    
+
     return bestCoord
 
+
 def crossover(parent1, parent2, child1, child2):
-    n = len(parent1.board[0])
-    k = random.randrange(0, n)
+
+    k = random.randrange(nDigits)
 
     child1.board = copy.deepcopy(parent1.board)
     child2.board = copy.deepcopy(parent2.board)
     for i in range(k):
         child1.board[i] = copy.deepcopy(parent2.board[i])
         child2.board[i] = copy.deepcopy(parent1.board[i])
-    #print(parent1.board)
-    #print(parent2.board)
-    #print(child1.board)
-    #print(child2.board)
+    # print(parent1.board)
+    # print(parent2.board)
+    # print(child1.board)
+    # print(child2.board)
 
 
 def GA(newPopulationSize, eliteSize, maxIters, mutationProbability, tournamentSize):
@@ -136,9 +156,9 @@ def GA(newPopulationSize, eliteSize, maxIters, mutationProbability, tournamentSi
     duringIterations = False
     iterNum = 0
     for i in range(newPopulationSize):
-        population.append(sudokuPuzzle())
-        newPopulation.append(sudokuPuzzle())
-    
+        population.append(sudokuPuzzle(original))
+        newPopulation.append(sudokuPuzzle(original))
+
     for i in range(maxIters):
         population.sort()
         if population[0].fitness == 1.0:
@@ -150,11 +170,11 @@ def GA(newPopulationSize, eliteSize, maxIters, mutationProbability, tournamentSi
         for j in range(eliteSize, newPopulationSize, 2):
             k1 = selection(population, tournamentSize)
             k2 = selection(population, tournamentSize)
-            crossover(population[k1], population[k2], newPopulation[j], newPopulation[j+1])
+            crossover(population[k1], population[k2], newPopulation[j], newPopulation[j + 1])
             mutation(newPopulation[j], mutationProbability)
-            mutation(newPopulation[j+1], mutationProbability)
+            mutation(newPopulation[j + 1], mutationProbability)
             newPopulation[j].fitness = newPopulation[j].fitnessFunction()
-            newPopulation[j+1].fitness = newPopulation[j+1].fitnessFunction()
+            newPopulation[j + 1].fitness = newPopulation[j + 1].fitnessFunction()
         population[:] = newPopulation[:]
 
     population.sort()
@@ -162,19 +182,18 @@ def GA(newPopulationSize, eliteSize, maxIters, mutationProbability, tournamentSi
         print("Pronadjeno je (najblize)resenje u poslednjoj iteraciji")
     print("Najblize resenje je:")
     for i in range(nDigits):
-            print(population[0].board[i])
+        print(population[0].board[i])
 
 
-original = [ [0,0,0, 0,0,1, 0,9,0],
-             [5,0,0, 0,0,0, 6,0,0],
-             [0,0,9, 3,7,0, 0,0,0],
-             [9,0,6, 0,5,0, 3,0,0],
-             [1,0,5, 9,0,0, 7,0,0],
-             [0,2,0, 0,0,0, 0,0,0],
-             [0,0,0, 0,0,2, 0,1,7],
-             [0,0,0, 0,4,0, 0,0,0],
-             [3,0,0, 1,9,6, 0,2,0]
-           ]
+original = [[0, 0, 0, 0, 0, 1, 0, 9, 0],
+            [5, 0, 0, 0, 0, 0, 6, 0, 0],
+            [0, 0, 9, 3, 7, 0, 0, 0, 0],
+            [9, 0, 6, 0, 5, 0, 3, 0, 0],
+            [1, 0, 5, 9, 0, 0, 7, 0, 0],
+            [0, 2, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 2, 0, 1, 7],
+            [0, 0, 0, 0, 4, 0, 0, 0, 0],
+            [3, 0, 0, 1, 9, 6, 0, 2, 0]
+            ]
 
-
-GA(150, 50, 500, 0.05, 10)
+GA(150, 50, 10000, 0.2, 10)
