@@ -25,14 +25,31 @@ class sudokuPuzzle:
         self.board = initialize(self)
         self.original = copy.deepcopy(originalDict)
 
+
 def fitnessFunction(individual):
     val = 0
     for pos in individual.original:
         (posI, posJ) = pos
-        if individual.board[posI][posJ] != individual.original[(posI, posJ)]:
-            val += 1
+        num = individual.original[(posI, posJ)]
+        if individual.board[posI][posJ] != num:
+            val += findValueInSameSubsquare(individual, num, posI, posJ)
     return val
 
+
+def findValueInSameSubsquare(individual, num, i1, j1):
+    # i i j su nam koord pocetka tj gornjeg levog polja kvadranta u kom trazimo vrednost
+    i = 3 * int(i1 / 3)
+    j = 3 * int(j1 / 3)
+    endI = i + 3
+    endJ = j + 3
+    val = 0
+    while i < endI:
+        while j < endJ:
+            if individual.board[i][j] == num:
+                val = abs(i1 - i) + abs(j1 - j)
+            j += 1
+        i += 1
+    return val
 
 def invert(individual):
     if random.uniform(0, 1) < 0.5:
