@@ -36,6 +36,7 @@ def fitnessFunction(individual):
     return val
 
 
+
 def findValueInSameSubsquare(individual, num, i1, j1):
     # i i j su nam koord pocetka tj gornjeg levog polja kvadranta u kom trazimo vrednost
     i = 3 * int(i1 / 3)
@@ -51,65 +52,83 @@ def findValueInSameSubsquare(individual, num, i1, j1):
         i += 1
     return val
 
-def invert(individual):
-    if random.uniform(0, 1) < 0.5:
+def invertRow(individual):
         # vrste
-        subSq = random.randrange(3)
-        i = random.randrange(3)
-        j = random.randrange(3)
-        i = 3 * subSq + i
-        j = 3 * subSq + j
-        tmp = individual.board[i]
-        individual.board[i] = individual.board[j]
-        individual.board[j] = tmp
-
-        return i, j, True
-    else:
+    subSq = random.randrange(3)
+    i = random.randrange(3)
+    j = random.randrange(3)
+    i = 3 * subSq + i
+    j = 3 * subSq + j
+    swap(individual,i,j,True)
+    return i, j
+def invertColumn(individual):
         # kolone
-        subSq = random.randrange(3)
-        i = random.randrange(3)
-        j = random.randrange(3)
-        i = 3 * subSq + i
-        j = 3 * subSq + j
-        tmp = individual.board[:][i]
-        individual.board[:][i] = individual.board[:][j]
-        individual.board[:][j] = tmp
+    subSq = random.randrange(3)
+    i = random.randrange(3)
+    j = random.randrange(3)
+    i = 3 * subSq + i
+    j = 3 * subSq + j
+    swap(individual,i,j,False)
+    return i, j
 
-        return i, j, False
-
-
-def reverse(individual, i, j, isRow):
-    if isRow == True:
-        tmp = individual.board[i][:]
-        individual.board[i][:] = individual.board[j][:]
-        individual.board[j][:] = tmp
+def swap(individual, i, j, isRow):
+    if isRow:
+        tmp = copy.deepcopy(individual.board[i])
+        individual.board[i] = copy.deepcopy(individual.board[j][:])
+        individual.board[j] = copy.deepcopy(tmp)
     else:
-        for k in range(9):
-            tmp = individual.board[k][i]
-            individual.board[k][i] = individual.board[k][j]
-            individual.board[k][j] = tmp
+        tmp = copy.deepcopy(individual.board[:][i])
+        individual.board[:][i] = copy.deepcopy(individual.board[:][j])
+        individual.board[:][j] = copy.deepcopy(tmp)
 
-def SimulatedAnnealing(solution, maxIter):
+def SimulatedAnnealing(solution):
     currentValue = fitnessFunction(solution)
     bestValue = currentValue
-    i = 1
-    while i < maxIter:
-        i1, j1, isRow = invert(solution)
+    bestSol = copy.deepcopy(solution)
+    i=1
+    while i<20000:
+        #invertujemo vrste
+        i1, j1 = invertRow(solution)
         newValue = fitnessFunction(solution)
+        if newValue == 0:
+            return newValue, solution, i
         if newValue < bestValue:
             bestValue = newValue
+            bestSol = copy.deepcopy(solution)
         else:
             p = 1.0/i**0.5
             q = random.uniform(0,1)
-            if p>q:
+            if p<q:
                 currentValue = newValue
             else:
-                reverse(solution, i1, j1, isRow)
+                swap(solution, i1, j1, True)
         if newValue < bestValue:
             bestValue = newValue
-        i += 1
-    return bestValue, solution
+            bestSol = copy.deepcopy(solution)
+        #invertujemoKolone
+        i1, j1 = invertColumn(solution)
+        newValue = fitnessFunction(solution)
+        if newValue == 0:
+            return newValue, solution, i
+        if newValue < bestValue:
+            bestValue = newValue
+            bestSol = copy.deepcopy(solution)
 
+        else:
+            p = 1.0 / i ** 0.5
+            q = random.uniform(0, 1)
+            if p < q:
+                currentValue = newValue
+            else:
+                swap(solution, i1, j1, False)
+        if newValue < bestValue:
+            bestValue = newValue
+            bestSol = copy.deepcopy(solution)
+
+
+        i += 1
+
+    return bestValue, bestSol, i
 original = [
         [8,0,0,0,0,0,0,0,0],
         [0,0,3,6,0,0,0,0,0],
@@ -127,8 +146,13 @@ for i in range(9):
     for j in range(9):
         if original[i][j] != 0:
             originalD[(i, j)] = original[i][j]
-
+print("start")
 solution = sudokuPuzzle(originalD)
-value, sol = SimulatedAnnealing(solution, 150000)
+value, sol, iteration = SimulatedAnnealing(solution)
 print(value)
-print(sol.board)
+for i in range(nDigits):
+    res = ""
+    for j in range(nDigits):
+        res += str(sol.board[i][j]) + " "
+    print(res)
+print(iteration,"-ta iteracija")
