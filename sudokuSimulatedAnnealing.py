@@ -23,7 +23,7 @@ def initialize(individual):
 class sudokuPuzzle:
     def __init__(self, originalDict):
         self.board = initialize(self)
-        self.original = copy.deepcopy(originalDict)
+        self.original = originalDict
 
 
 def fitnessFunction(individual):
@@ -45,6 +45,8 @@ def findValueInSameSubsquare(individual, num, i1, j1):
     endJ = j + 3
     val = 0
     while i < endI:
+
+        j = 3 * int(j1 / 3)
         while j < endJ:
             if individual.board[i][j] == num:
                 val = abs(i1 - i) + abs(j1 - j)
@@ -55,8 +57,11 @@ def findValueInSameSubsquare(individual, num, i1, j1):
 def invertRow(individual):
         # vrste
     subSq = random.randrange(3)
+    random.seed()
     i = random.randrange(3)
+    random.seed()
     j = random.randrange(3)
+    random.seed()
     i = 3 * subSq + i
     j = 3 * subSq + j
     swap(individual,i,j,True)
@@ -64,8 +69,11 @@ def invertRow(individual):
 def invertColumn(individual):
         # kolone
     subSq = random.randrange(3)
+    random.seed()
     i = random.randrange(3)
+    random.seed()
     j = random.randrange(3)
+    random.seed()
     i = 3 * subSq + i
     j = 3 * subSq + j
     swap(individual,i,j,False)
@@ -129,17 +137,16 @@ def SimulatedAnnealing(solution):
         i += 1
 
     return bestValue, bestSol, i
-original = [
-        [8,0,0,0,0,0,0,0,0],
-        [0,0,3,6,0,0,0,0,0],
-        [0,7,0,0,9,0,2,0,0],
-        [0,5,0,0,0,7,0,0,0],
-        [0,0,0,0,4,5,7,0,0],
-        [0,0,0,1,0,0,0,3,0],
-        [0,0,1,0,0,0,0,6,8],
-        [0,0,8,5,0,0,0,1,0],
-        [0,9,0,0,0,0,4,0,0]
-    ]
+original = [[2,9,0,0,0,0,0,7,0],
+       [3,0,6,0,0,8,4,0,0],
+       [8,0,0,0,4,0,0,0,2],
+       [0,2,0,0,3,1,0,0,7],
+       [0,0,0,0,8,0,0,0,0],
+       [1,0,0,9,5,0,0,6,0],
+       [7,0,0,0,9,0,0,0,1],
+       [0,0,1,2,0,0,3,0,6],
+       [0,3,0,0,0,0,0,5,9]]
+
 
 originalD = {}
 for i in range(9):
