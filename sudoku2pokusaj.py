@@ -36,8 +36,26 @@ class sudokuPuzzle:
         val = 0
         for pos in self.original:
             (posI, posJ) = pos
-            if self.board[posI][posJ] != self.original[(posI, posJ)]:
-                val += 1
+            num = self.original[(posI, posJ)]
+            if self.board[posI][posJ] != num:
+                val += self.findValueInSameSubsquare(num, posI, posJ)
+        return val
+
+    def findValueInSameSubsquare(self, num, i1, j1):
+        # i i j su nam koord pocetka tj gornjeg levog polja kvadranta u kom trazimo vrednost
+        #vraca menhetn rastojanje originalne vrednosti od vrednosti u tabli
+        i = 3 * int(i1 / 3)
+        j = 3 * int(j1 / 3)
+        endI = i + 3
+        endJ = j + 3
+        val = 0
+        while i < endI:
+            j = 3 * int(j1 / 3)
+            while j < endJ:
+                if self.board[i][j] == num:
+                    val = abs(i1 - i) + abs(j1 - j)
+                j += 1
+            i += 1
         return val
 
     def isRowFeasible(self, r, val):
@@ -115,6 +133,8 @@ def selection(population, tournamentRate):
 # 6# 0 1 2 3 4 5 6 7 8 2*3 + 0
 # 7# 0 1 2 3 4 5 6 7 8
 # 8# 0 1 2 3 4 5 6 7 8
+#TODO FIX FINISH
+#treba vratiti na verziju gde nije bilo moguce postaviti 0 tj da u tabli postoji 0
 def finish(individual):
     rowSets = [set(individual.board[i]) for i in range(nDigits)]
     columnSets = [set() for i in range(nDigits)]
@@ -196,9 +216,8 @@ def GA(newPopulationSize, eliteSize, maxIters, mutationProbability, tournamentSi
     if not duringIterations:
         print("Pronadjeno je (najblize)resenje u poslednjoj iteraciji")
     print("Najblize resenje je:")
-    for i in range(nDigits):
-        print(population[0].board[i])
-        print(population[0].fitness)
+    print(population[0].board)
+    print(population[0].fitness)
 
 
 original = [
@@ -218,4 +237,4 @@ for i in range(9):
         if original[i][j] != 0:
             originalD[(i, j)] = original[i][j]
 
-GA(150, 50, 10000, 0.8, 10, originalD)
+GA(150, 50, 100, 0.8, 10, originalD)
